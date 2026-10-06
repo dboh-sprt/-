@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>쭈언니 섭외 평가</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* 레이아웃: 한 단 보고서. 결론 → 체크리스트 → 실측 2종 → 리스크 → 제품 궁합 → 남은 확인. 후보마다 같은 틀로 재사용. */
+:root{
+  --bg:#f5f2f4; --surface:#ffffff; --fg:#1d1a1e; --muted:#6b6470; --line:#e4dde3;
+  --accent:#c2255c; --accent-soft:#fbe4ec;
+  --ok:#1f7a4d; --ok-soft:#e1f3ea; --mid:#9a6400; --mid-soft:#fbefd3;
+  --bad:#b3261e; --bad-soft:#fbe3e1; --cond:#3d5a99; --cond-soft:#e4eaf8;
+  --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --mono:"IBM Plex Mono","Consolas",monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#18151a; --surface:#221e25; --fg:#f1ecf2; --muted:#a79fab; --line:#3a333e;
+  --accent:#ff7aa5; --accent-soft:#3c1f2b;
+  --ok:#6fd3a0; --ok-soft:#18362a; --mid:#f0c060; --mid-soft:#3a2e12;
+  --bad:#ff8f86; --bad-soft:#3f1d1b; --cond:#9db6f2; --cond-soft:#1f2942; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#18151a; --surface:#221e25; --fg:#f1ecf2; --muted:#a79fab; --line:#3a333e;
+  --accent:#ff7aa5; --accent-soft:#3c1f2b;
+  --ok:#6fd3a0; --ok-soft:#18362a; --mid:#f0c060; --mid-soft:#3a2e12;
+  --bad:#ff8f86; --bad-soft:#3f1d1b; --cond:#9db6f2; --cond-soft:#1f2942; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.65;word-break:keep-all}
+.wrap{max-width:920px;margin:0 auto;padding-inline:20px;padding-block:40px 64px;display:flex;flex-direction:column;gap:44px}
+a{color:var(--accent)}
+h1,h2,h3{text-wrap:balance;margin:0;line-height:1.3}
+h1{font-size:clamp(26px,5vw,38px);font-weight:700;letter-spacing:-.02em}
+h2{font-size:21px;font-weight:700}
+h3{font-size:15px;font-weight:600}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;color:var(--accent);text-transform:uppercase}
+.sub{color:var(--muted);font-size:14px}
+header.cand{margin-top:28px}
+header{display:flex;flex-direction:column;gap:8px;border-bottom:2px solid var(--fg);padding-bottom:20px}
+section{display:flex;flex-direction:column;gap:14px}
+.lead{color:var(--muted);font-size:14px;max-width:68ch}
+
+.verdict{background:var(--accent-soft);border:1px solid var(--accent);border-radius:14px;padding:22px 24px;display:flex;flex-direction:column;gap:10px}
+.verdict .big{font-size:clamp(19px,3.4vw,24px);font-weight:700;line-height:1.4}
+.tally{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+
+.pill{display:inline-block;font-size:12.5px;font-weight:600;padding:2px 10px;border-radius:999px;white-space:nowrap}
+.ok{background:var(--ok-soft);color:var(--ok)} .mid{background:var(--mid-soft);color:var(--mid)}
+.bad{background:var(--bad-soft);color:var(--bad)} .cond{background:var(--cond-soft);color:var(--cond)}
+
+.scroll{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12.5px;color:var(--muted);font-weight:600;background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.q{font-weight:600;min-width:150px}
+td.n{font-family:var(--mono);color:var(--accent);font-weight:600;width:28px}
+.req{font-size:11.5px;color:var(--accent);font-weight:600;margin-left:4px}
+tfoot td{font-weight:700;background:var(--bg)}
+td ul{margin:4px 0 12px;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+td ul:last-child{margin-bottom:0}
+
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.facts div{background:var(--surface);padding:12px 16px;min-width:0}
+.facts dt{font-size:12px;color:var(--muted)} .facts dd{margin:2px 0 0;font-weight:600}
+dl{margin:0}
+
+.bars{display:flex;flex-direction:column;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.bar{display:grid;grid-template-columns:minmax(0,230px) minmax(0,1fr) 92px;gap:12px;align-items:center;font-size:13.5px}
+.track{height:16px;background:var(--bg);border-radius:4px;position:relative}
+.fill{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:4px}
+.bar .v{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.axis{font-size:12px;color:var(--muted)}
+@media (max-width:560px){.bar{grid-template-columns:1fr 80px}.bar .track{grid-column:1/-1;order:3}}
+
+.quotes{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.qcol{display:flex;flex-direction:column;gap:8px;min-width:0}
+.qcol ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.note{border-left:3px solid var(--line);padding:2px 0 2px 14px;color:var(--muted);font-size:13.5px}
+ol.todo{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
+.src{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+.src ul{margin:0;padding-left:18px}
+a.ev{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+a.ev:hover,a.ev:focus-visible{text-decoration-thickness:2px}
+.howto{font-size:13px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0}
+td p{margin:0 0 2px}
+td ul.sub{margin:4px 0 2px;padding-left:18px;gap:3px;list-style:'– ';color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<p class="howto">밑줄이 있는 문장을 누르면 그 근거가 된 영상, 댓글, 기사가 새 창으로 열립니다. 밑줄이 없는 수치는 영상과 댓글을 직접 내려받아 센 것입니다. 이 체크리스트에는 <strong>9번(구매력·판매)</strong> 문항이 더해져 있습니다.</p>
+
+<header>
+  <span class="eyebrow">Barybody · 인플루언서 섭외 · 후보 평가</span>
+  <h1>쭈언니 섭외 평가</h1>
+  <p class="sub">기준: 섭외 체크리스트 8문항 + 구매력(판매) 1문항 · 조사일 2026-10-06 · 유튜브 <a href="https://www.youtube.com/@jju_unni">@jju_unni</a>, 인스타그램 <a href="https://www.instagram.com/jju_unni_/">@jju_unni_</a></p>
+</header>
+
+<section>
+  <div class="verdict">
+    <span class="eyebrow">결론</span>
+    <p class="big">아홉 문항을 모두 충족하는 유일한 후보입니다. 핵심 강점은 검증된 판매력, 핵심 한계는 작은 규모와 가전 전례가 없다는 점입니다.</p>
+    <p>자기 기획 상품이 10분에 3억, 이틀에 2억씩 완판된 이력이 언론에 보도될 만큼 구매 전환이 확실합니다. 팬("마이쭈")이 스스로 영업하고, 본인은 댓글에 일일이 답합니다. 다만 조회수 중앙값이 약 3.4만으로 규모가 작고, 지금까지 판 것은 패션·잡화·생활용품뿐입니다.</p>
+    <div class="tally">
+      <span class="pill ok">충족 9 (전 문항)</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>누구인가</h2>
+  <dl class="facts">
+    <div><dt>이력</dt><dd><a class="ev" href="https://namu.wiki/w/쭈언니" target="_blank" rel="noopener">인하대 소비자학과 → 화장품 회사 교육팀 → 신발모델(6천 켤레) → 제작템 디렉터</a></dd></div>
+    <div><dt>유튜브</dt><dd>구독자 약 13만 · 2019년 6월 개설 · 영상 306개</dd></div>
+    <div><dt>인스타그램</dt><dd><a class="ev" href="https://www.instagram.com/jju_unni_/" target="_blank" rel="noopener">@jju_unni_ 약 1.7만</a></dd></div>
+    <div><dt>업로드</dt><dd>주 1회 · 롱폼 조회수 중앙값 약 3.4만</dd></div>
+    <div><dt>콘텐츠</dt><dd>뷰티·패션(신발·가방 전문) 리뷰 + 자체 제작템(공동기획)</dd></div>
+    <div><dt>팬덤 이름</dt><dd>마이쭈</dd></div>
+    <div><dt>소속사</dt><dd><a class="ev" href="https://namu.wiki/w/쭈언니" target="_blank" rel="noopener">제이웨이브(본인이 대표인 1인 미디어·커머스 법인)</a></dd></div>
+  </dl>
+  <p class="note">결혼·가족은 공개하지 않습니다. 2026년 10월 5일 영상까지 확인했습니다.</p>
+</section>
+
+<section>
+  <h2>섭외 체크리스트 9문항</h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th></th><th>문항</th><th>판정</th><th>근거</th></tr></thead>
+    <tbody>
+<tr><td class="n">1</td><td class="q">우리 고객과 같은 삶인가<span class="req">필수</span></td><td><span class="pill ok">충족</span></td><td><ul><li><a class="ev" href="https://namu.wiki/w/쭈언니" target="_blank" rel="noopener">1992년생(만 32세), 뷰티·패션을 다루는 30대 여성입니다.</a></li><li>시청층이 30대 여성 자기관리·라이프스타일로, 마사지기 타깃과 겹칩니다.<ul class="sub"><li>어깨·손목 피로를 호소하는 댓글이 보입니다. <a class="ev" href="https://www.youtube.com/watch?v=7TQj83N-dhE&amp;lc=UgwR40y19E1xyf2myM54AaABAg" target="_blank" rel="noopener">"손목 어깨가 너무 아파서"</a>, <a class="ev" href="https://www.youtube.com/watch?v=nzRibwoWa7E&amp;lc=UgxsyQPSjUbOeg2_Gmp4AaABAg" target="_blank" rel="noopener">"어깨가 아파서 백팩 아니면 못 들고 다닌다"</a></li></ul></li><li>결혼·가족은 공개하지 않습니다. 육아맘은 아닙니다.</li></ul></td></tr>
+<tr><td class="n">2</td><td class="q">꾸미지 않고 솔직한가</td><td><span class="pill ok">충족</span></td><td><ul><li>광고와 내돈내산을 분명히 가립니다.<ul class="sub"><li>협찬 없는 영상은 <a class="ev" href="https://www.youtube.com/watch?v=7TQj83N-dhE" target="_blank" rel="noopener">제목에 "광고❌"</a>를 붙이고 설명란에 "전제품 직접 구매, 차라리 협찬이었으면"이라고 씁니다.</li></ul></li><li><a class="ev" href="https://www.youtube.com/watch?v=zyIhEPgXVUw" target="_blank" rel="noopener">쌍꺼풀 재수술</a>, 레이저 시술 같은 자기 이야기를 그대로 공개합니다.</li><li>비판에도 솔직하게 답합니다.<ul class="sub"><li><a class="ev" href="https://www.youtube.com/watch?v=NdQUtY6APzg&amp;lc=UgwxSijHd3dc2MIO6X94AaABAg" target="_blank" rel="noopener">"목소리를 일부러 내려까는 것 같아 불편하다"</a>는 댓글에, 14살 때 목 수술과 성대 폴립 이력을 설명했습니다.</li></ul></li></ul></td></tr>
+<tr><td class="n">3</td><td class="q">오래, 한결같은가</td><td><span class="pill ok">충족</span></td><td><ul><li>2019년 6월 개설, 6년 넘게 영상 306개를 주 1회꼴로 올립니다.</li><li><a class="ev" href="https://namu.wiki/w/쭈언니" target="_blank" rel="noopener">구독자 3만(2021)→12만(2024)→약 13만으로 완만히 성장했습니다.</a><ul class="sub"><li><a class="ev" href="https://www.youtube.com/watch?v=nzRibwoWa7E&amp;lc=UgxQTp2hiLv3a_fIWG54AaABAg" target="_blank" rel="noopener">"5년 전 신발 추천 영상으로 입문"</a> 같은 장기 구독자가 많습니다.</li></ul></li><li>전직 화장품 회사 교육팀·신발모델(신발 6천 켤레)에서 제작템 디렉터로 이어지는 서사가 일관됩니다.</li></ul></td></tr>
+<tr><td class="n">4</td><td class="q">친구 같은데 닮고 싶은가</td><td><span class="pill ok">충족</span></td><td><ul><li>친구 같은 점: "언니와 카페에서 수다 떠는 느낌"이라는 반응이 많습니다.<ul class="sub"><li><a class="ev" href="https://www.youtube.com/watch?v=7TQj83N-dhE&amp;lc=UgwjUh_BS9gNx4JO-hR4AaABAg" target="_blank" rel="noopener">"언니랑 카페 앉아서 수다 떠는 느낌"</a></li></ul></li><li>닮고 싶은 점: "평범한 회사원에서 제품 디렉터가 된" 서사가 30대 여성의 롤모델로 읽힙니다.<ul class="sub"><li><a class="ev" href="https://www.youtube.com/watch?v=7TQj83N-dhE&amp;lc=UgwmamrRCW-ORb83DgV4AaABAg" target="_blank" rel="noopener">"대학 입학 때 언니 영상 보고 홀린 듯 구독, 이제 곧 졸업"</a></li></ul></li></ul></td></tr>
+<tr><td class="n">5</td><td class="q">팬과 진짜 대화하는가</td><td><span class="pill ok">충족</span></td><td><ul><li>본인이 댓글에 직접, 길고 자세히 답합니다.<ul class="sub"><li>조사한 영상 5개에서 본인 답글이 157개입니다. 제품 개발·사이즈·소재까지 하나하나 설명합니다.</li></ul></li><li><a class="ev" href="https://www.qletter.co.kr/article/715829" target="_blank" rel="noopener">인스타그램 투표로 팔로워 의견을 모아 제품 기획에 반영합니다(큐레터 2023).</a></li><li>유튜브·인스타 라이브로 신상을 소개하고, 카카오톡 채널 "쭈언니 마켓 알리미"로 소통합니다.</li></ul></td></tr>
+<tr><td class="n">6</td><td class="q">팬이 함께 움직이는가</td><td><span class="pill ok">충족</span></td><td><ul><li>팬덤 이름이 "마이쭈"이고, 팬들이 스스로 영업합니다.<ul class="sub"><li><a class="ev" href="https://www.youtube.com/watch?v=OqnyJi9zitI&amp;lc=UgzmUSRG9pZKlWs7wMV4AaABAg" target="_blank" rel="noopener">"쭈언니 제작템 영업사원들은 마이쭈들, 친구한테 슬링백 영업했다"</a></li></ul></li><li>신상이 열리면 "피케팅"이라 부를 만큼 몰려 삽니다.<ul class="sub"><li>구매 시각을 맞추는 댓글이 줄을 잇습니다. <a class="ev" href="https://www.youtube.com/watch?v=9wVYRaE2rlQ&amp;lc=UgwOWtVKo_zMaj6Uv7N4AaABAg" target="_blank" rel="noopener">"알람 맞춰 놓고 앵클부츠·슬링백 구매했다"</a></li></ul></li><li>전용 팬카페, 정례 팬미팅, 기부 캠페인은 찾지 못했습니다.</li></ul></td></tr>
+<tr><td class="n">7</td><td class="q">추천을 믿고 따라 사는가</td><td><span class="pill ok">충족</span></td><td><ul><li>"믿고 산다"가 뚜렷합니다.<ul class="sub"><li><a class="ev" href="https://www.youtube.com/watch?v=9wVYRaE2rlQ&amp;lc=UgxCWqTBdbO82pPgOMJ4AaABAg" target="_blank" rel="noopener">"신발은 쭈언니 상품만 사요"(좋아요 10)</a>, <a class="ev" href="https://www.youtube.com/watch?v=OqnyJi9zitI&amp;lc=UgyucY0nzz-V_fJsjwF4AaABAg" target="_blank" rel="noopener">"제작템·추천템 안 가리고 아묻따 사 모은 마이쭈"</a></li></ul></li><li>자기 제품만이 아니라, 추천한 협찬 제품도 따라 삽니다.<ul class="sub"><li><a class="ev" href="https://www.youtube.com/watch?v=nzRibwoWa7E&amp;lc=Ugw26WkrtB78K0lmjBp4AaABAg" target="_blank" rel="noopener">"오드리선 생리대, 역시 쭈언니라 바로 달려가서 구매"</a>. 칫솔·화장솜 같은 생활용품도 마켓을 열면 팔립니다.</li></ul></li><li>신뢰의 이유는 "직접 오래 써 보고 솔직하게 말한다"입니다.<ul class="sub"><li><a class="ev" href="https://www.youtube.com/watch?v=nzRibwoWa7E&amp;lc=UgxBLhR5SJksP1kmGux4AaABAg" target="_blank" rel="noopener">"유행을 쫓기보다 직접 오래 쓰며 장단점을 솔직하게 말해 신뢰가 높다"(좋아요 5)</a></li></ul></li></ul></td></tr>
+<tr><td class="n">8</td><td class="q">논란은 없는가<span class="req">필수</span></td><td><span class="pill ok">충족</span></td><td><ul><li><a class="ev" href="https://namu.wiki/w/쭈언니" target="_blank" rel="noopener">나무위키에 논란·사건사고 항목이 없고, 커뮤니티에서도 비판 글이 거의 없습니다.</a></li><li>제작템 품질·배송·환불 불만 댓글은 일부 있으나, 본인이 답하고 해결합니다.<ul class="sub"><li><a class="ev" href="https://www.youtube.com/watch?v=OqnyJi9zitI&amp;lc=UgzqJKiCAi2fOIgWH0J4AaABAg" target="_blank" rel="noopener">"사이즈가 작게 나와 환불 안 된다"</a>는 댓글에 환불 정책을 안내했습니다. 공동기획 상품이라 품질·CS 관리가 변수입니다.</li></ul></li></ul></td></tr>
+<tr><td class="n">9</td><td class="q">구매력(판매)이 입증됐는가</td><td><span class="pill ok">충족</span></td><td><ul><li>자체 기획 상품이 반복적으로 완판되고, 언론에 보도됐습니다. (최강점)<ul class="sub"><li><a class="ev" href="https://www.hankyung.com/article/202607022918i" target="_blank" rel="noopener">미쏘x쭈언니 셔츠: 출시 10분 3억 완판, 2주 누적 13억(한국경제 2026).</a></li><li><a class="ev" href="https://www.newsis.com/view/NISX20220413_0001832044" target="_blank" rel="noopener">슈펜x쭈언니 구두: 출시 이틀 매출 2억, 슈펜 단일상품 최단시간 판매기록(뉴시스 2022).</a></li><li><a class="ev" href="https://www.news1.kr/industry/distribution/5420841" target="_blank" rel="noopener">재출시분은 4일 만에 1만 족, 이랜드몰 랭킹 1위(뉴스1 2024).</a></li></ul></li><li>영상에서도 실시간으로 품절됩니다.<ul class="sub"><li><a class="ev" href="https://www.youtube.com/watch?v=9wVYRaE2rlQ" target="_blank" rel="noopener">가을 구두 출시 영상</a>에 <a class="ev" href="https://www.youtube.com/watch?v=9wVYRaE2rlQ&amp;lc=UgwHD2G0s4bZ1q50kJt4AaABAg" target="_blank" rel="noopener">"225 품절", "카키 전사이즈 품절"</a> 댓글이 줄을 잇습니다.</li></ul></li><li>다만 전환 실적은 전부 패션·잡화·생활용품입니다. 가전·건강 기기를 판 전례는 없습니다.</li></ul></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2>바리바디 제품 관점</h2>
+  <p class="howto" style="background:var(--ok-soft);border-color:var(--ok);color:var(--fg)">적합도 상(조건부) — 대량 노출형이 아니라, 전환율이 높은 소수 정예형입니다. "쭈언니 마켓"(구독자 할인)이나 "쭈언니 에디션" 공동기획으로 붙이면 궁합이 좋습니다.</p>
+  <ul>
+    <li>구매 전환이 세 후보 중 가장 확실합니다. 자기 기획 상품이 10분·이틀 단위로 완판되고, 추천한 협찬 생활용품도 팔립니다.</li>
+    <li>자기관리·피로 맥락이 맞습니다. 30대 여성 타깃이고, "어깨·손목이 아프다"는 댓글이 실제로 보입니다.</li>
+    <li>신뢰가 높습니다. "광고❌ 내돈내산" 리뷰를 쌓아 와, 추천이 "믿고 사는 것"으로 소비됩니다.</li>
+    <li>연출 — 단건 PPL보다 그의 방식(공동기획 "쭈언니 에디션" 또는 구독자 할인 마켓)에 맞추는 편이 전환이 큽니다.</li>
+    <li>리스크 1 — 규모: 조회수 중앙값 약 3.4만으로 노출 총량이 작습니다. 인지도 확산보다 전환·신뢰 목적에 맞습니다.</li>
+    <li>리스크 2 — 전례: 지금까지 패션·잡화·생활용품만 팔았고, 가전·건강 기기는 처음입니다. 소규모로 시작해 반응을 보는 것을 권합니다.</li>
+    <li>리스크 3 — 품질·CS: 공동기획 상품에는 품질·배송·환불 문의가 따릅니다. 제품 품질과 응대 체계를 함께 준비해야 합니다.</li>
+  </ul>
+</section>
+
+</div>
+
+</body>
+</html>
